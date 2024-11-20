@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import image from "../assets/login.jpg";
 import toast  from 'react-hot-toast';
+import axios from 'axios';
 
 
 const LoginSignup = () => {
@@ -11,16 +12,40 @@ const LoginSignup = () => {
 
   const toggleForm = () => setIsLogin(!isLogin);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      // Redirect to Home page on successful login
-      toast.success("LoggedIn successfully");
-      navigate("/home");
-    } else {
-      // Redirect to Login page after successful signup
-      toast.success("Signup successfully");
-      setIsLogin(true);
+  
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+  
+    if (!email || !password) {
+      toast.error("Email and password are required");
+      return;
+    }
+  
+    try {
+      if (isLogin) {
+        // Login Request
+        const response = await axios.post('http://localhost:5000/login', { email, password });
+        toast.success("Logged in successfully!");
+        
+        // Save the JWT token if needed
+        localStorage.setItem("token", response.data.token);
+        navigate("/home");
+      } else {
+        // Signup Request
+        const name = e.target[0].value; // For sign-up, first input will be name
+        const response = await axios.post('http://localhost:5000/signup', {
+          name,
+          email: e.target[1].value,
+          password: e.target[2].value,
+        });
+        toast.success("Signed up successfully!");
+        setIsLogin(true); // Switch back to login form after successful signup
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "An error occurred");
+      console.error(error);
     }
   };
 
@@ -35,18 +60,71 @@ const LoginSignup = () => {
 
   const handleBiometricAuth = async () => {
     try {
-      const publicKeyCredentialRequestOptions = {
-        // Options retrieved from server
-      };
-      const credential = await navigator.credentials.get({
-        publicKey: publicKeyCredentialRequestOptions,
+      // Step 1: Get WebAuthn options from the server
+      const email = prompt("Enter your email to proceed with biometric login:");
+      const authOptionsResponse = await fetch('http://localhost:5000/webauthn/generate-auth-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       });
-      console.log("Biometric Auth Success:", credential);
-      navigate("/home");
+  
+      const authOptions = await authOptionsResponse.json();
+  
+      // Step 2: Request biometric authentication via WebAuthn
+      const publicKeyCredential = await navigator.credentials.get({
+        publicKey: {
+          challenge: Uint8Array.from(authOptions.challenge, (c) => c.charCodeAt(0)),
+          allowCredentials: authOptions.allowCredentials.map((cred) => ({
+            id: Uint8Array.from(atob(cred.id), (c) => c.charCodeAt(0)),
+            type: cred.type,
+          })),
+          userVerification: authOptions.userVerification,
+        },
+      });
+  
+      // Step 3: Convert the result to a format suitable for the backend
+      const credentialResponse = {
+        id: publicKeyCredential.id,
+        rawId: btoa(String.fromCharCode(...new Uint8Array(publicKeyCredential.rawId))),
+        type: publicKeyCredential.type,
+        response: {
+          authenticatorData: btoa(
+            String.fromCharCode(...new Uint8Array(publicKeyCredential.response.authenticatorData))
+          ),
+          clientDataJSON: btoa(
+            String.fromCharCode(...new Uint8Array(publicKeyCredential.response.clientDataJSON))
+          ),
+          signature: btoa(
+            String.fromCharCode(...new Uint8Array(publicKeyCredential.response.signature))
+          ),
+          userHandle: publicKeyCredential.response.userHandle
+            ? btoa(String.fromCharCode(...new Uint8Array(publicKeyCredential.response.userHandle)))
+            : null,
+        },
+      };
+  
+      // Step 4: Verify the response with the backend
+      const verifyResponse = await fetch('http://localhost:5000/webauthn/verify-auth-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, response: credentialResponse }),
+      });
+  
+      const verifyResult = await verifyResponse.json();
+  
+      if (verifyResponse.ok) {
+        toast.success(verifyResult.message);
+        navigate("/home");
+      } else {
+        toast.error(verifyResult.message);
+      }
     } catch (error) {
-      console.error("Biometric Auth Failed:", error);
+      console.error("Biometric authentication failed:", error);
+      toast.error("Biometric authentication failed");
     }
   };
+  
+  
 
   return (
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
