@@ -17,10 +17,7 @@ app.use(bodyParser.json());
 
 // MongoDB Connection
 mongoose
-  .connect('mongodb://localhost:27017', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect('mongodb://localhost:27017')
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
