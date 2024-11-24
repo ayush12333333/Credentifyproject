@@ -47,6 +47,7 @@ const LoginSignup = () => {
       toast.error(error.response?.data?.message || "An error occurred");
       console.error(error);
     }
+    localStorage.setItem('userEmail', formData.email);
   };
 
   const handleGoogleSuccess = (response) => {
