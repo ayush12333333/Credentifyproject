@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Fingerprint, CheckCircle2, Loader2 } from 'lucide-react';
 import image from '../assets/finger.jpg';

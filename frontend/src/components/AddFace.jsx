@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import  { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom"; // Import for navigation
 import { Upload, ImageIcon } from "lucide-react";
 import image from "../assets/face.jpg.jpg";

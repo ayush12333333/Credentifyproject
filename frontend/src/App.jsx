@@ -1,8 +1,8 @@
-import React from "react";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginSignup from "./components/LoginSignup";
 import Dashboard from "./components/Dashboard";
-import Footer from "./components/Footer";
+
 import HomePage from "./components/Homepage";
 import AddDocuments from "./components/AddDocuments";
 import AddDetails from "./components/Adddetails";
