@@ -9,6 +9,7 @@ import {
   Legend,
 } from 'recharts';
 
+// eslint-disable-next-line react/prop-types
 const AdoptionTrendChart = ({ trendData }) => {
   return (
     <div className="flex items-center justify-center my-8">

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
-
+// eslint-disable-next-line react/prop-types
 const AccessibilityChart = ({ data, colors }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
@@ -9,7 +9,8 @@ const AccessibilityChart = ({ data, colors }) => {
     setActiveIndex(index);
   };
 
-  const handlePieClick = (data, index) => {
+  const handlePieClick = (data) => {
+    // eslint-disable-next-line react/prop-types
     alert(`Region: ${data.region}, Access: ${data.access}%`);
   };
 
@@ -27,10 +28,13 @@ const AccessibilityChart = ({ data, colors }) => {
           dataKey="access"
           onMouseEnter={handlePieEnter}
           onClick={handlePieClick}
+
         >
+        
           {data.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
+              // eslint-disable-next-line react/prop-types
               fill={colors[index % colors.length]}
               stroke={activeIndex === index ? '#000' : 'none'}
               strokeWidth={activeIndex === index ? 2 : 1}
