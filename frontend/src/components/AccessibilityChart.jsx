@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
+
 const AccessibilityChart = ({ data, colors }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
